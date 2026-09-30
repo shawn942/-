@@ -1,0 +1,46 @@
+# 疊代演算法範例 (Iteration Algorithms)
+
+def factorial_iterative(n):
+    """使用疊代法計算階乘 n!"""
+    result = 1
+    for i in range(1, n + 1):
+        result *= i
+    return result
+
+# iter_framework.py
+"""
+疊代法通用框架示範：以牛頓迭代法（Heron's Method）求平方根為例
+"""
+
+def iterative_framework(target, initial_guess=1.0, tolerance=1e-7, max_iterations=1000):
+    """
+    通用疊代框架函數
+    :param target: 目標求解數值
+    :param initial_guess: 初始猜測值
+    :param tolerance: 允許的誤差極限（收斂條件）
+    :param max_iterations: 最大疊代次數（防範無窮迴圈）
+    :return: 疊代收斂後的近似解
+    """
+    x = initial_guess
+    for i in range(max_iterations):
+        # 疊代更新公式（以求 sqrt(target) 為例）
+        next_x = 0.5 * (x + target / x)
+        
+        # 檢查是否達到收斂條件（相鄰兩次差值小於容許誤差）
+        if abs(next_x - x) < tolerance:
+            print(f"[系統訊息] 在第 {i+1} 次疊代後成功收斂。")
+            return next_x
+            
+        x = next_x
+        
+    print("[警告] 達到最大疊代次數仍未完全收斂。")
+    return x
+
+if __name__ == "__main__":
+    # 自訂問題：求解 25.0 的平方根
+    target_value = 25.0
+    print(f"--- 正在計算 {target_value} 的平方根 ---")
+    
+    result = iterative_framework(target_value)
+    print(f"計算結果: {result}")
+    print(f"驗證結果 (result^2): {result * result}")
