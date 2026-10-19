@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>基於RWA與NFC易碎防偽技術之金門高粱老酒數位產權交易平台</title>
+  <!-- 引入 Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- 引入 FontAwesome 圖標 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- 引入 Google Fonts: Inter 與 JetBrains Mono (用於數據等寬對齊) -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            os: {
+              bg: '#0c0d10',
+              panel: '#121318',
+              hover: '#1a1c23',
+              active: '#252832',
+              border: '#22242e',
+              text: '#f3f4f6',
+              muted: '#8a939b',
+              blue: '#2081e2',
+              green: '#10b981',
+              red: '#ef4444'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0c0d10;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #252832;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #373b4a;
+    }
+    .badge-rwa {
+      background: rgba(32, 129, 226, 0.15);
+      color: #2081e2;
+      border: 1px solid rgba(32, 129, 226, 0.3);
+    }
+    .badge-verified {
+      background: rgba(16, 185, 129, 0.15);
+      color: #10b981;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+  </style>
+</head>
+<body class="bg-os-bg text-os-text font-sans antialiased h-screen flex flex-col overflow-hidden select-none">
+
+  <!-- 頂部與主體容器 -->
+  <div class="flex flex-1 overflow-hidden">
+    
+    <!-- 1. 最左側極簡圖標導覽列 (Icon Sidebar) -->
+    <aside class="w-14 bg-os-bg border-r border-os-border flex flex-col items-center py-3 justify-between z-20 shrink-0">
+      <div class="flex flex-col items-center space-y-5 w-full">
+        <!-- 專題專屬 Logo -->
+        <a href="#" class="w-9 h-9 rounded-full bg-amber-600 flex items-center justify-center text-white shadow-lg shadow-amber-600/20 hover:scale-105 transition" title="基於RWA與NFC易碎防偽技術之金門高粱老酒數位產權交易平台">
+          <i class="fa-solid fa-wine-bottle text-lg"></i>
+        </a>
+        
+        <!-- 導覽圖標群 -->
+        <nav class="flex flex-col items-center space-y-2 w-full px-2">
+          <button class="w-10 h-10 rounded-lg text-os-muted hover:text-white hover:bg-os-hover flex items-center justify-center transition" title="探索市場">
+            <i class="fa-regular fa-compass text-lg"></i>
+          </button>
+          <button class="w-10 h-10 rounded-lg bg-os-active text-white flex items-center justify-center transition relative" title="老酒產權排行">
+            <div class="absolute left-0 w-1 h-5 bg-os-blue rounded-r"></div>
+            <i class="fa-solid fa-table-cells-large text-lg"></i>
+          </button>
+          <button onclick="simulateNFC()" class="w-10 h-10 rounded-lg text-os-muted hover:text-white hover:bg-os-hover flex items-center justify-center transition" title="NFC 易碎晶片防偽驗證">
+            <i class="fa-solid fa-microchip text-lg"></i>
+          </button>
+          <button class="w-10 h-10 rounded-lg text-os-muted hover:text-white hover:bg-os-hover flex items-center justify-center transition" title="實體提領與銷毀">
+            <i class="fa-solid fa-box-archive text-lg"></i>
+          </button>
+          <button class="w-10 h-10 rounded-lg text-os-muted hover:text-white hover:bg-os-hover flex items-center justify-center transition" title="個人數位酒庫">
+            <i class="fa-regular fa-circle-user text-lg"></i>
+          </button>
+        </nav>
+      </div>
+
+      <!-- 底部系統設定圖標 -->
+      <div class="flex flex-col items-center space-y-2 w-full px-2">
+        <button class="w-10 h-10 rounded-lg text-os-muted hover:text-white hover:bg-os-hover flex items-center justify-center transition" title="智慧合約架構">
+          <i class="fa-solid fa-cube text-base"></i>
+        </button>
+        <button class="w-10 h-10 rounded-lg text-os-muted hover:text-white hover:bg-os-hover flex items-center justify-center transition" title="系統設定">
+          <i class="fa-solid fa-gear text-base"></i>
+        </button>
+      </div>
+    </aside>
+
+    <!-- 右側主內容區 -->
+    <div class="flex-1 flex flex-col overflow-hidden">
+      
+      <!-- 2. 頂部專題標題、全域搜尋與登入列 (Top Header) -->
+      <header class="h-14 border-b border-os-border px-4 flex items-center justify-between bg-os-bg shrink-0 gap-4">
+        
+        <!-- 專題正式名稱展示 -->
+        <div class="flex items-center space-x-3 shrink-0">
+          <span class="font-bold text-white text-sm md:text-base tracking-wide flex items-center">
+            <span class="w-2 h-4 bg-amber-500 rounded-sm mr-2"></span>
+            基於RWA與NFC易碎防偽技術之金門高粱老酒數位產權交易平台
+          </span>
+          <span class="hidden xl:inline-block text-[11px] font-mono px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">
+            NQU CSIE RWA-DEX
+          </span>
+        </div>
+
+        <!-- 搜尋框 -->
+        <div class="relative flex-1 max-w-md">
+          <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-os-muted text-sm"></i>
+          <input 
+            id="searchInput"
+            type="text" 
+            placeholder="檢索高粱老酒名稱、NFC 晶片 UID (如 NFC_CHIP_001)..." 
+            class="w-full bg-os-panel border border-os-border focus:border-os-muted rounded-lg pl-9 pr-8 py-1.5 text-xs md:text-sm text-white placeholder-os-muted focus:outline-none transition"
+          >
+          <span class="absolute right-2.5 top-1/2 -translate-y-1/2 w-5 h-5 rounded bg-os-active text-os-muted text-xs flex items-center justify-center font-mono">/</span>
+        </div>
+
+        <!-- 右側節點狀態與錢包按鈕 -->
+        <div class="flex items-center space-x-3 shrink-0">
+          <div class="hidden sm:flex px-3 py-1.5 rounded-lg bg-os-panel border border-os-border text-xs font-mono text-emerald-400 items-center space-x-2">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span>合約 0xD7A...F771B 已連線</span>
+          </div>
+          <button onclick="alert('已連接測試錢包：0x5B38Da6a701c568545dCfcB03FcB875f56beddC4 (Account 1)')" class="px-3.5 py-1.5 rounded-lg bg-os-blue hover:bg-blue-600 text-white text-xs md:text-sm font-medium transition shadow-lg shadow-blue-500/20">
+            連接 Web3 錢包
+          </button>
+        </div>
+      </header>
+
+      <!-- 下方工作區：左側篩選面板 + 右側資料表格 -->
+      <div class="flex-1 flex overflow-hidden">
+        
+        <!-- 3. 左側多維度篩選面板 (Filter Sidebar) -->
+        <aside id="filterSidebar" class="w-64 border-r border-os-border bg-os-bg p-4 overflow-y-auto shrink-0 space-y-6">
+          
+          <!-- 篩選方式 -->
+          <div>
+            <div class="text-xs font-semibold text-os-muted mb-3 tracking-wider">數位產權類別 (RWA)</div>
+            <div class="flex flex-wrap gap-2">
+              <button class="px-3 py-1.5 rounded-lg bg-os-active text-white text-xs font-medium flex items-center space-x-1.5 border border-gray-600">
+                <i class="fa-solid fa-wine-bottle text-amber-400 text-xs"></i>
+                <span>金門高粱實體綁定 NFT</span>
+              </button>
+            </div>
+          </div>
+
+          <hr class="border-os-border">
+
+          <!-- 類別 (年份/系列) -->
+          <div>
+            <div class="flex items-center justify-between text-xs font-semibold text-os-muted mb-3">
+              <span>老酒系列篩選</span>
+              <i class="fa-solid fa-chevron-up text-[10px]"></i>
+            </div>
+            <div class="flex flex-wrap gap-1.5" id="categoryGroup">
+              <button onclick="filterCategory('ALL')" class="cat-btn active px-2.5 py-1 rounded-md bg-os-active text-white text-xs font-medium border border-gray-600 transition">所有酒款</button>
+              <button onclick="filterCategory('特級老酒')" class="cat-btn px-2.5 py-1 rounded-md bg-os-panel hover:bg-os-hover text-os-muted hover:text-white text-xs border border-os-border transition">特級老酒</button>
+              <button onclick="filterCategory('陳年高粱')" class="cat-btn px-2.5 py-1 rounded-md bg-os-panel hover:bg-os-hover text-os-muted hover:text-white text-xs border border-os-border transition">陳年高粱</button>
+              <button onclick="filterCategory('絕版黑金剛')" class="cat-btn px-2.5 py-1 rounded-md bg-os-panel hover:bg-os-hover text-os-muted hover:text-white text-xs border border-os-border transition">絕版黑金剛</button>
+              <button onclick="filterCategory('紀念酒款')" class="cat-btn px-2.5 py-1 rounded-md bg-os-panel hover:bg-os-hover text-os-muted hover:text-white text-xs border border-os-border transition">紀念酒款</button>
+            </div>
+          </div>
+
+          <hr class="border-os-border">
+
+          <!-- NFC 易碎防偽狀態 -->
+          <div>
+            <div class="flex items-center justify-between text-xs font-semibold text-os-muted mb-3">
+              <span>NFC 易碎防偽驗證狀態</span>
+              <i class="fa-solid fa-chevron-up text-[10px]"></i>
+            </div>
+            <div class="space-y-2 text-xs text-os-muted">
+              <label class="flex items-center space-x-2 cursor-pointer hover:text-white">
+                <input type="checkbox" checked class="rounded bg-os-panel border-os-border text-os-blue focus:ring-0">
+                <span class="flex items-center"><i class="fa-solid fa-shield-check text-emerald-400 mr-1.5"></i>晶片封條完好 (在庫)</span>
+              </label>
+              <label class="flex items-center space-x-2 cursor-pointer hover:text-white">
+                <input type="checkbox" checked class="rounded bg-os-panel border-os-border text-os-blue focus:ring-0">
+                <span>已完成鏈上 UID 雙向綁定</span>
+              </label>
+            </div>
+          </div>
+
+          <hr class="border-os-border">
+
+          <!-- 實體恆溫倉儲據點 -->
+          <div>
+            <div class="flex items-center justify-between text-xs font-semibold text-os-muted mb-3">
+              <span>實體鑑定與恆溫倉儲據點</span>
+              <i class="fa-solid fa-chevron-up text-[10px]"></i>
+            </div>
+            <div class="space-y-2 text-xs text-os-muted">
+              <label class="flex items-center space-x-2 cursor-pointer hover:text-white">
+                <input type="checkbox" checked class="rounded bg-os-panel border-os-border text-os-blue focus:ring-0">
+                <span>金門免稅恆溫總倉</span>
+              </label>
+              <label class="flex items-center space-x-2 cursor-pointer hover:text-white">
+                <input type="checkbox" checked class="rounded bg-os-panel border-os-border text-os-blue focus:ring-0">
+                <span>金城合作老酒行入庫據點</span>
+              </label>
+              <label class="flex items-center space-x-2 cursor-pointer hover:text-white">
+                <input type="checkbox" checked class="rounded bg-os-panel border-os-border text-os-blue focus:ring-0">
+                <span>山外藏家專業信託倉</span>
+              </label>
+            </div>
+          </div>
+
+        </aside>
+
+        <!-- 4. 右側核心數據看板 (Main Table Area) -->
+        <main class="flex-1 flex flex-col overflow-hidden bg-os-bg">
+          
+          <!-- 頂部快顯排序與工具列 -->
+          <div class="px-6 py-3 border-b border-os-border flex flex-wrap items-center justify-between gap-4 shrink-0">
+            <div class="flex items-center space-x-2">
+              <button id="toggleSidebarBtn" class="w-8 h-8 rounded-lg bg-os-panel hover:bg-os-hover border border-os-border flex items-center justify-center text-os-muted hover:text-white text-xs transition" title="收合篩選欄">
+                <i class="fa-solid fa-angles-left"></i>
+              </button>
+              <div class="flex items-center space-x-1.5">
+                <button class="tab-btn active px-3.5 py-1.5 rounded-full bg-os-active text-white text-xs font-medium flex items-center space-x-1.5 border border-gray-600 transition">
+                  <i class="fa-solid fa-fire text-amber-400"></i>
+                  <span>鏈上掛單與產權排行榜</span>
+                </button>
+                <button onclick="simulateNFC()" class="px-3.5 py-1.5 rounded-full bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 text-xs font-medium flex items-center space-x-1.5 border border-emerald-500/30 transition">
+                  <i class="fa-solid fa-wifi"></i>
+                  <span>模擬手機感應 NFC_CHIP_001</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- 右側時間區間 -->
+            <div class="flex items-center space-x-3">
+              <div class="flex items-center bg-os-panel border border-os-border rounded-lg p-0.5 text-xs" id="timeGroup">
+                <button class="time-btn px-2.5 py-1 rounded-md text-os-muted hover:text-white transition">所有</button>
+                <button class="time-btn px-2.5 py-1 rounded-md text-os-muted hover:text-white transition">30 天</button>
+                <button class="time-btn px-2.5 py-1 rounded-md text-os-muted hover:text-white transition">7 天</button>
+                <button class="time-btn active px-2.5 py-1 rounded-md bg-os-active text-white font-medium shadow transition">24 小時</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 中央高密度數據表格 (全金門高粱老酒 RWA 數位產權) -->
+          <div class="flex-1 overflow-auto px-6">
+            <table class="w-full text-left border-collapse">
+              <thead class="sticky top-0 bg-os-bg z-10 border-b border-os-border text-[11px] font-semibold text-os-muted uppercase tracking-wider">
+                <tr>
+                  <th class="py-3 pl-2 pr-4 w-8">#</th>
+                  <th class="py-3 px-2 min-w-[280px]">金門高粱老酒數位產權 (RWA NFT)</th>
+                  <th class="py-3 px-4 text-right cursor-pointer hover:text-white transition" onclick="sortTable('floor')">
+                    直購底價 (台幣) <i class="fa-solid fa-sort ml-0.5 text-[10px]"></i>
+                  </th>
+                  <th class="py-3 px-4 text-right cursor-pointer hover:text-white transition" onclick="sortTable('change')">
+                    24H 漲跌 <i class="fa-solid fa-sort ml-0.5 text-[10px]"></i>
+                  </th>
+                  <th class="py-3 px-4 text-right cursor-pointer hover:text-white transition" onclick="sortTable('offer')">
+                    最高出價 <i class="fa-solid fa-sort ml-0.5 text-[10px]"></i>
+                  </th>
+                  <th class="py-3 px-4 text-right cursor-pointer hover:text-white transition" onclick="sortTable('volume')">
+                    累積交易量 <i class="fa-solid fa-sort ml-0.5 text-[10px]"></i>
+                  </th>
+                  <th class="py-3 px-4 text-right">鏈上 Token ID</th>
+                  <th class="py-3 pl-4 pr-2 text-right">操作與過戶</th>
+                </tr>
+              </thead>
+              <tbody id="collectionTableBody" class="divide-y divide-os-border/60 text-sm">
+                <!-- 由 JavaScript 動態渲染專屬高粱老酒 RWA 資料 -->
+              </tbody>
+            </table>
+          </div>
+
+        </main>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 5. 底部系統與狀態列 -->
+  <footer class="h-8 bg-os-panel border-t border-os-border px-4 flex items-center justify-between text-[11px] text-os-muted shrink-0 z-30">
+    <div class="flex items-center space-x-4">
+      <div class="flex items-center space-x-1.5 text-emerald-400 font-medium">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span>智能合約 LiquidGoldRWA (ERC-721) 同步中</span>
+      </div>
+      <span class="text-os-border">|</span>
+      <span>SQLite 資料庫 (`liquid_gold.db`) 綁定正常</span>
+      <span class="text-os-border">|</span>
+      <span class="text-white">國立金門大學資訊工程學系專題 — 基於RWA與NFC易碎防偽技術之金門高粱老酒數位產權交易平台</span>
+    </div>
+    <div class="flex items-center space-x-4 font-mono text-white">
+      <span>支援台幣 ATM / 刷卡無痛過戶</span>
+    </div>
+  </footer>
+
+  <!-- NFC 感應與鏈上產權驗證彈出視窗 (Modal) -->
+  <div id="nfcModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-os-panel border border-os-border rounded-xl max-w-md w-full p-6 shadow-2xl relative">
+      <button onclick="closeModal()" class="absolute top-4 right-4 text-os-muted hover:text-white">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+      <div class="text-center mb-5">
+        <div class="w-12 h-12 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto mb-3 border border-emerald-500/30">
+          <i class="fa-solid fa-check text-xl"></i>
+        </div>
+        <span class="badge-verified text-xs px-2.5 py-1 rounded-full font-medium">✓ NFC 易碎晶片與區塊鏈雙向驗證通過</span>
+        <h3 id="modalWineName" class="text-lg font-bold text-white mt-3">金門高粱特級老酒 (1998 珍藏)</h3>
+        <p class="text-xs text-os-muted mt-1">實體老酒存放於：金門免稅恆溫總倉 (封條完好)</p>
+      </div>
+      
+      <div class="space-y-3 bg-os-bg p-4 rounded-lg border border-os-border text-xs font-mono mb-5">
+        <div class="flex justify-between">
+          <span class="text-os-muted">NFC 晶片 UID:</span>
+          <span id="modalChipUid" class="text-amber-400 font-semibold">NFC_CHIP_001</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-os-muted">鏈上 Token ID:</span>
+          <span id="modalTokenId" class="text-white">#1</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-os-muted">當前持有者 (Owner):</span>
+          <span class="text-white">0x5B38Da6a...eddC4</span>
+        </div>
+        <div class="flex justify-between items-start">
+          <span class="text-os-muted shrink-0 mr-2">鑄造交易雜湊 (TxHash):</span>
+          <span id="modalTxHash" class="text-os-blue break-all text-right">0xdeeb8ae8a3eacc02250a338dba8a03cdee37c6a4dac94fe88e9d84024c341584</span>
+        </div>
+      </div>
+
+      <div class="flex space-x-3">
+        <button onclick="triggerTransfer()" class="flex-1 bg-os-blue hover:bg-blue-600 text-white font-medium py-2.5 rounded-lg text-sm transition shadow-lg shadow-blue-500/20">
+          台幣一鍵購買 / 產權過戶
+        </button>
+        <button onclick="closeModal()" class="px-4 py-2.5 rounded-lg bg-os-active hover:bg-os-hover text-os-muted hover:text-white text-sm transition">
+          關閉
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript 專題數據與互動邏輯 -->
+  <script>
+    // 100% 專屬於「基於RWA與NFC易碎防偽技術之金門高粱老酒數位產權交易平台」之老酒 NFT 數據
+    const collectionsData = [
+      {
+        id: 1,
+        name: "金門高粱特級老酒 (1998 珍藏白金龍)",
+        category: "特級老酒",
+        uid: "NFC_CHIP_001",
+        vintage: "1998年",
+        storage: "金門免稅恆溫總倉 #A01",
+        avatarBg: "bg-gradient-to-br from-amber-600 to-yellow-800",
+        icon: "fa-wine-bottle",
+        floor: 38000,
+        floorText: "NT$ 38,000",
+        change: 15.4,
+        changeText: "+15.4%",
+        offer: 36500,
+        offerText: "NT$ 36,500",
+        volume: 380000,
+        volumeText: "NT$ 38.0萬",
+        tokenId: "#1",
+        txHash: "0xdeeb8ae8a3eacc02250a338dba8a03cdee37c6a4dac94fe88e9d84024c341584"
+      },
+      {
+        id: 2,
+        name: "黑金剛陳年高粱酒 (1985 絕版老罈)",
+        category: "絕版黑金剛",
+        uid: "NFC_CHIP_002",
+        vintage: "1985年",
+        storage: "金門免稅恆溫總倉 #A02",
+        avatarBg: "bg-gradient-to-br from-zinc-700 to-zinc-900 border border-amber-500/40",
+        icon: "fa-crown",
+        floor: 68000,
+        floorText: "NT$ 68,000",
+        change: 24.8,
+        changeText: "+24.8%",
+        offer: 65000,
+        offerText: "NT$ 65,000",
+        volume: 680000,
+        volumeText: "NT$ 68.0萬",
+        tokenId: "#2",
+        txHash: "0x8f9c2b11d4a7e63209c8a7b45f12e34d9081a2b3c4d5e6f7a8b9c0d1e2f3a4b5"
+      },
+      {
+        id: 3,
+        name: "金門酒廠 58度陳年特級高粱 (2005)",
+        category: "陳年高粱",
+        uid: "NFC_CHIP_003",
+        vintage: "2005年",
+        storage: "金城合作老酒行入庫據點",
+        avatarBg: "bg-gradient-to-br from-amber-700 to-red-900",
+        icon: "fa-wine-glass-empty",
+        floor: 16800,
+        floorText: "NT$ 16,800",
+        change: 6.2,
+        changeText: "+6.2%",
+        offer: 15500,
+        offerText: "NT$ 15,500",
+        volume: 151200,
+        volumeText: "NT$ 15.1萬",
+        tokenId: "#3",
+        txHash: "0x3a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b"
+      },
+      {
+        id: 4,
+        name: "金門建廠五十週年世紀珍藏紀念酒",
+        category: "紀念酒款",
+        uid: "NFC_CHIP_004",
+        vintage: "2002年",
+        storage: "山外藏家專業信託倉",
+        avatarBg: "bg-gradient-to-br from-red-700 to-rose-950",
+        icon: "fa-award",
+        floor: 29500,
+        floorText: "NT$ 29,500",
+        change: -1.5,
+        changeText: "-1.5%",
+        offer: 28000,
+        offerText: "NT$ 28,000",
+        volume: 118000,
+        volumeText: "NT$ 11.8萬",
+        tokenId: "#4",
+        txHash: "0x7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d"
+      },
+      {
+        id: 5,
+        name: "八二三砲戰勝利紀念陳高 (1993 瓷瓶)",
+        category: "紀念酒款",
+        uid: "NFC_CHIP_005",
+        vintage: "1993年",
+        storage: "金門免稅恆溫總倉 #B05",
+        avatarBg: "bg-gradient-to-br from-blue-800 to-indigo-950",
+        icon: "fa-shield-halved",
+        floor: 22000,
+        floorText: "NT$ 22,000",
+        change: 9.8,
+        changeText: "+9.8%",
+        offer: 20500,
+        offerText: "NT$ 20,500",
+        volume: 88000,
+        volumeText: "NT$ 8.8萬",
+        tokenId: "#5",
+        txHash: "0x1f2e3d4c5b6a7f8e9d0c1b2a3f4e5d6c7b8a9f0e1d2c3b4a5f6e7d8c9b0a1f2e"
+      },
+      {
+        id: 6,
+        name: "九龍經典珍藏金門高粱老酒 (2008)",
+        category: "特級老酒",
+        uid: "NFC_CHIP_006",
+        vintage: "2008年",
+        storage: "金城合作老酒行入庫據點",
+        avatarBg: "bg-gradient-to-br from-yellow-600 to-amber-900",
+        icon: "fa-dragon",
+        floor: 14200,
+        floorText: "NT$ 14,200",
+        change: 3.1,
+        changeText: "+3.1%",
+        offer: 13500,
+        offerText: "NT$ 13,500",
+        volume: 99400,
+        volumeText: "NT$ 9.9萬",
+        tokenId: "#6",
+        txHash: "0x9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9a8b"
+      },
+      {
+        id: 7,
+        name: "大麴酒 66度 絕版老白金龍 (1996)",
+        category: "特級老酒",
+        uid: "NFC_CHIP_007",
+        vintage: "1996年",
+        storage: "金門免稅恆溫總倉 #A09",
+        avatarBg: "bg-gradient-to-br from-emerald-700 to-teal-950",
+        icon: "fa-fire-flame-curved",
+        floor: 45000,
+        floorText: "NT$ 45,000",
+        change: 18.2,
+        changeText: "+18.2%",
+        offer: 43000,
+        offerText: "NT$ 43,000",
+        volume: 225000,
+        volumeText: "NT$ 22.5萬",
+        tokenId: "#7",
+        txHash: "0x4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e"
+      },
+      {
+        id: 8,
+        name: "金門高粱 15年陳年老酒 (紫壇禮盒)",
+        category: "陳年高粱",
+        uid: "NFC_CHIP_008",
+        vintage: "2010年",
+        storage: "山外藏家專業信託倉",
+        avatarBg: "bg-gradient-to-br from-purple-800 to-fuchsia-950",
+        icon: "fa-jar",
+        floor: 19800,
+        floorText: "NT$ 19,800",
+        change: 0.0,
+        changeText: "0.0%",
+        offer: 18900,
+        offerText: "NT$ 18,900",
+        volume: 79200,
+        volumeText: "NT$ 7.9萬",
+        tokenId: "#8",
+        txHash: "0x2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c"
+      }
+    ];
+
+    let currentData = [...collectionsData];
+    let sortDirection = 1;
+
+    // 渲染專題老酒表格
+    function renderTable(data) {
+      const tbody = document.getElementById('collectionTableBody');
+      tbody.innerHTML = '';
+
+      if (data.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="8" class="py-12 text-center text-os-muted">
+              查無符合條件的金門高粱老酒數位產權
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      data.forEach((item, index) => {
+        let changeColorClass = "text-os-muted";
+        let arrowIcon = "";
+        if (item.change > 0) {
+          changeColorClass = "text-os-green";
+          arrowIcon = `<i class="fa-solid fa-caret-up mr-1"></i>`;
+        } else if (item.change < 0) {
+          changeColorClass = "text-os-red";
+          arrowIcon = `<i class="fa-solid fa-caret-down mr-1"></i>`;
+        }
+
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-os-hover/90 transition cursor-pointer group";
+        tr.onclick = () => openWineModal(item);
+        tr.innerHTML = `
+          <td class="py-3.5 pl-2 pr-4 font-mono text-os-muted">${index + 1}</td>
+          <td class="py-3.5 px-2">
+            <div class="flex items-center">
+              <div class="w-10 h-10 rounded-lg ${item.avatarBg} flex items-center justify-center mr-3.5 shrink-0 shadow-md text-white">
+                <i class="fa-solid ${item.icon} text-base"></i>
+              </div>
+              <div>
+                <div class="flex items-center space-x-2">
+                  <span class="font-semibold text-white group-hover:text-os-blue transition">${item.name}</span>
+                  <i class="fa-solid fa-circle-check text-os-blue text-xs" title="官方鑑定入庫認證"></i>
+                  <span class="badge-rwa text-[10px] px-1.5 py-0.5 rounded font-mono">${item.uid}</span>
+                </div>
+                <div class="text-xs text-os-muted mt-0.5 flex items-center space-x-2">
+                  <span>年份：${item.vintage}</span>
+                  <span>•</span>
+                  <span class="text-emerald-400/90"><i class="fa-solid fa-warehouse mr-1"></i>${item.storage}</span>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="py-3.5 px-4 text-right font-mono font-semibold text-white">${item.floorText}</td>
+          <td class="py-3.5 px-4 text-right font-mono font-medium ${changeColorClass}">${arrowIcon}${item.changeText}</td>
+          <td class="py-3.5 px-4 text-right font-mono text-os-muted">${item.offerText}</td>
+          <td class="py-3.5 px-4 text-right font-mono text-white">${item.volumeText}</td>
+          <td class="py-3.5 px-4 text-right font-mono text-amber-400 font-bold">${item.tokenId}</td>
+          <td class="py-3.5 pl-4 pr-2 text-right">
+            <button onclick="event.stopPropagation(); openWineModalById(${item.id})" class="px-3 py-1 rounded bg-os-blue/20 hover:bg-os-blue text-os-blue hover:text-white border border-os-blue/40 text-xs font-medium transition">
+              查驗與購買
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // 打開老酒 NFC 與鏈上驗證詳情視窗
+    function openWineModal(item) {
+      document.getElementById('modalWineName').innerText = item.name;
+      document.getElementById('modalChipUid').innerText = item.uid;
+      document.getElementById('modalTokenId').innerText = item.tokenId;
+      document.getElementById('modalTxHash').innerText = item.txHash;
+      document.getElementById('nfcModal').classList.remove('hidden');
+    }
+
+    function openWineModalById(id) {
+      const target = collectionsData.find(c => c.id === id);
+      if (target) openWineModal(target);
+    }
+
+    function simulateNFC() {
+      openWineModal(collectionsData[0]);
+    }
+
+    function closeModal() {
+      document.getElementById('nfcModal').classList.add('hidden');
+    }
+
+    function triggerTransfer() {
+      const name = document.getElementById('modalWineName').innerText;
+      const uid = document.getElementById('modalChipUid').innerText;
+      alert(`【智慧合約過戶成功】\n已觸發 LiquidGoldRWA 合約 safeTransferFrom！\n\n酒品：${name}\n綁定晶片：${uid}\n狀態：數位產權已無痛轉移至您的錢包，實體高粱老酒繼續由金門免稅恆溫倉安全託管！`);
+      closeModal();
+    }
+
+    // 類別篩選功能
+    function filterCategory(cat) {
+      if (cat === 'ALL') {
+        currentData = [...collectionsData];
+      } else {
+        currentData = collectionsData.filter(item => item.category === cat);
+      }
+      renderTable(currentData);
+    }
+
+    // 排序功能
+    function sortTable(field) {
+      sortDirection *= -1;
+      currentData.sort((a, b) => (a[field] - b[field]) * sortDirection);
+      renderTable(currentData);
+    }
+
+    // 搜尋過濾功能
+    document.getElementById('searchInput').addEventListener('input', (e) => {
+      const keyword = e.target.value.toLowerCase();
+      currentData = collectionsData.filter(item => 
+        item.name.toLowerCase().includes(keyword) || 
+        item.uid.toLowerCase().includes(keyword) ||
+        item.tokenId.toLowerCase().includes(keyword) ||
+        item.storage.toLowerCase().includes(keyword)
+      );
+      renderTable(currentData);
+    });
+
+    // 左側欄收合
+    const toggleSidebarBtn = document.getElementById('toggleSidebarBtn');
+    const filterSidebar = document.getElementById('filterSidebar');
+    toggleSidebarBtn.addEventListener('click', () => {
+      filterSidebar.classList.toggle('hidden');
+    });
+
+    // 初始渲染
+    renderTable(currentData);
+  </script>
+</body>
+</html>
